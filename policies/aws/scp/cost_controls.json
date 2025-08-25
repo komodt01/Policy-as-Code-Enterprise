@@ -1,0 +1,220 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RestrictExpensiveInstanceTypes",
+      "Effect": "Deny",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:*:*:instance/*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:InstanceType": [
+            "p3.24xlarge",
+            "p4d.24xlarge",
+            "x1e.32xlarge",
+            "z1d.12xlarge",
+            "r5.24xlarge",
+            "m5.24xlarge",
+            "c5.24xlarge"
+          ]
+        },
+        "StringNotEquals": {
+          "aws:RequestTag/CostApproval": "ExecutiveApproved"
+        }
+      }
+    },
+    {
+      "Sid": "RequireCostAllocationTags",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "rds:CreateDBInstance",
+        "s3:CreateBucket",
+        "lambda:CreateFunction",
+        "ecs:CreateService",
+        "eks:CreateCluster"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/CostCenter": "true"
+        }
+      }
+    },
+    {
+      "Sid": "RequireProjectTagging",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "rds:CreateDBInstance",
+        "lambda:CreateFunction"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/Project": "true"
+        }
+      }
+    },
+    {
+      "Sid": "RestrictExpensiveRegions",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "rds:CreateDBInstance"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": [
+            "ap-northeast-1",
+            "eu-central-1",
+            "sa-east-1"
+          ]
+        },
+        "StringNotEquals": {
+          "aws:RequestTag/RegionJustification": "BusinessRequirement"
+        }
+      }
+    },
+    {
+      "Sid": "PreventUntaggedResourceCreation",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "rds:CreateDBInstance",
+        "s3:CreateBucket"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/Owner": "true"
+        }
+      }
+    },
+    {
+      "Sid": "RequireEnvironmentTag",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "rds:CreateDBInstance",
+        "lambda:CreateFunction",
+        "ecs:CreateService"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/Environment": "true"
+        }
+      }
+    },
+    {
+      "Sid": "RestrictLargeVolumeCreation",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:CreateVolume",
+        "ec2:ModifyVolume"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "NumericGreaterThan": {
+          "ec2:VolumeSize": "1000"
+        },
+        "StringNotEquals": {
+          "aws:RequestTag/DataRetention": "LongTerm"
+        }
+      }
+    },
+    {
+      "Sid": "PreventExpensiveRDSInstances",
+      "Effect": "Deny",
+      "Action": [
+        "rds:CreateDBInstance",
+        "rds:ModifyDBInstance"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "rds:db-instance-class": [
+            "db.r5.24xlarge",
+            "db.x1e.32xlarge",
+            "db.m5.24xlarge"
+          ]
+        },
+        "StringNotEquals": {
+          "aws:RequestTag/DatabaseTier": "Production"
+        }
+      }
+    },
+    {
+      "Sid": "RequireAutoShutdownForDev",
+      "Effect": "Deny",
+      "Action": "ec2:RunInstances",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": [
+            "development",
+            "staging",
+            "testing"
+          ]
+        },
+        "Null": {
+          "aws:RequestTag/AutoShutdown": "true"
+        }
+      }
+    },
+    {
+      "Sid": "RestrictReservedInstanceModification",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:ModifyReservedInstances",
+        "rds:ModifyReservedDBInstances"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:PrincipalTag/Role": "FinanceAdmin"
+        }
+      }
+    },
+    {
+      "Sid": "PreventNATGatewayInDev",
+      "Effect": "Deny",
+      "Action": "ec2:CreateNatGateway",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": [
+            "development",
+            "testing"
+          ]
+        },
+        "StringNotEquals": {
+          "aws:RequestTag/NetworkRequirement": "InternetAccess"
+        }
+      }
+    },
+    {
+      "Sid": "RequireSchedulingForNonProduction",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "rds:CreateDBInstance"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": [
+            "development",
+            "staging",
+            "testing"
+          ]
+        },
+        "Null": {
+          "aws:RequestTag/Schedule": "true"
+        }
+      }
+    }
+  ]
+}

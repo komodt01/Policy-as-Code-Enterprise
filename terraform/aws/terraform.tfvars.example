@@ -1,0 +1,65 @@
+# terraform/aws/terraform.tfvars.example
+# Example variable values for AWS Policy-as-Code Enterprise Framework
+# Copy this file to terraform.tfvars and customize for your environment
+
+# Basic Configuration
+aws_region          = "us-east-1"
+environment         = "prod"
+organization_name   = "acme-corp"
+
+# Organizational Structure (Set to false for demo/testing)
+create_organization = false  # Set to true only if you have Organizations permissions
+
+# Governance Features
+enable_cloudtrail   = true
+enable_config       = true
+enable_guardduty    = false  # Optional - additional cost
+enable_security_hub = false  # Optional - additional cost
+
+# Tagging and Compliance
+cost_center         = "IT-GOVERNANCE"
+owner_email         = "cloud-team@example.com"
+data_classification = "Internal"
+
+# Policy Configuration
+policy_enforcement_mode = "audit"  # Start with audit, change to "enforce" when ready
+allowed_regions = [
+  "us-east-1",
+  "us-west-2",
+  "eu-west-1"
+]
+
+# Compliance Frameworks
+compliance_frameworks = [
+  "NIST-CSF",
+  "SOC2",
+  "CIS"
+]
+
+# Security Settings
+require_mfa_for_privileged_actions = true
+enforce_encryption_at_rest         = true
+enforce_encryption_in_transit      = true
+
+# Monitoring Configuration
+cloudtrail_retention_days    = 90
+config_snapshot_frequency    = "Daily"
+notification_email          = "governance-alerts@example.com"
+
+# Demo Configuration
+demo_mode                = true   # Safe for testing
+create_sample_violations = false  # Set to true to test policy enforcement
+
+# Advanced Settings (Optional)
+enable_cross_region_replication = false
+enable_log_encryption          = true
+
+# Restricted instance types (require special approval)
+restricted_instance_types = [
+  "p3.24xlarge",
+  "p4d.24xlarge",
+  "x1e.32xlarge",
+  "z1d.12xlarge",
+  "r5.24xlarge",
+  "m5.24xlarge"
+]
