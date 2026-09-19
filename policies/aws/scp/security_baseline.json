@@ -1,16 +1,53 @@
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "RequireTagging",
-      "Effect": "Deny",
-      "Action": "ec2:RunInstances",
-      "Resource": "*",
-      "Condition": {
-        "Null": {
-          "aws:RequestTag/Environment": "true"
-        }
-      }
-    }
-  ]
+"Version": "2012-10-17",
+"Statement": [
+{
+"Sid": "RequireEnvironmentTagForEC2",
+"Effect": "Deny",
+"Action": "ec2:RunInstances",
+"Resource": "arn:aws:ec2:*:*:instance/*",
+"Condition": {
+"Null": {
+"aws:RequestTag/Environment": "true"
+}
+}
+},
+{
+"Sid": "PreventCloudTrailDisablement",
+"Effect": "Deny",
+"Action": [
+"cloudtrail:DeleteTrail",
+"cloudtrail:StopLogging"
+],
+"Resource": "*"
+},
+{
+"Sid": "PreventAWSConfigDisablement",
+"Effect": "Deny",
+"Action": [
+"config:DeleteConfigurationRecorder",
+"config:DeleteDeliveryChannel",
+"config:StopConfigurationRecorder"
+],
+"Resource": "*"
+},
+{
+"Sid": "PreventGuardDutyDisablement",
+"Effect": "Deny",
+"Action": [
+"guardduty:DeleteDetector",
+"guardduty:DisassociateFromAdministratorAccount"
+],
+"Resource": "*"
+},
+{
+"Sid": "PreventSecurityHubDisablement",
+"Effect": "Deny",
+"Action": [
+"securityhub:DisableSecurityHub",
+"securityhub:DisassociateFromAdministratorAccount"
+],
+"Resource": "*"
+}
+]
 }
