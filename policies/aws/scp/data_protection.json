@@ -1,269 +1,87 @@
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "EnforceDataClassificationTags",
-      "Effect": "Deny",
-      "Action": [
-        "s3:CreateBucket",
-        "s3:PutObject",
-        "rds:CreateDBInstance",
-        "dynamodb:CreateTable",
-        "kms:CreateKey"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "Null": {
-          "aws:RequestTag/DataClassification": "true"
-        }
-      }
-    },
-    {
-      "Sid": "RequireEncryptionForConfidentialData",
-      "Effect": "Deny",
-      "Action": [
-        "s3:PutObject",
-        "rds:CreateDBInstance",
-        "dynamodb:CreateTable"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "StringNotEquals": {
-          "s3:x-amz-server-side-encryption": [
-            "aws:kms"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "PreventPublicReadAccessToSensitiveData",
-      "Effect": "Deny",
-      "Action": [
-        "s3:PutBucketAcl",
-        "s3:PutObjectAcl",
-        "s3:PutBucketPolicy"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Internal",
-            "Confidential", 
-            "Restricted"
-          ],
-          "s3:x-amz-acl": [
-            "public-read",
-            "public-read-write",
-            "authenticated-read"
-          ]
-        }
-      }
-    },
-    {
-      "Sid": "RequireSecureTransportForSensitiveData",
-      "Effect": "Deny",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "Bool": {
-          "aws:SecureTransport": "false"
-        }
-      }
-    },
-    {
-      "Sid": "RestrictCrossRegionDataTransfer",
-      "Effect": "Deny",
-      "Action": [
-        "s3:ReplicateObject",
-        "rds:CreateDBInstanceReadReplica"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "StringNotEquals": {
-          "s3:ExistingObjectTag/DataResidency": "Approved"
-        }
-      }
-    },
-    {
-      "Sid": "RequireKMSEncryptionForPHI",
-      "Effect": "Deny",
-      "Action": [
-        "s3:PutObject",
-        "rds:CreateDBInstance",
-        "dynamodb:CreateTable"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataType": "PHI"
-        },
-        "StringNotEquals": {
-          "s3:x-amz-server-side-encryption": "aws:kms"
-        }
-      }
-    },
-    {
-      "Sid": "PreventUnencryptedSnapshotSharing",
-      "Effect": "Deny",
-      "Action": [
-        "rds:ModifyDBSnapshotAttribute",
-        "ec2:ModifySnapshotAttribute"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "Bool": {
-          "rds:encrypted": "false"
-        }
-      }
-    },
-    {
-      "Sid": "RequireLogEncryption",
-      "Effect": "Deny",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "Null": {
-          "logs:kms-key-id": "true"
-        }
-      }
-    },
-    {
-      "Sid": "RestrictDataExportServices",
-      "Effect": "Deny",
-      "Action": [
-        "dms:CreateReplicationInstance",
-        "glue:CreateCrawler",
-        "athena:StartQueryExecution"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "StringNotEquals": {
-          "aws:RequestTag/DataProcessingApproved": "SecurityTeam"
-        }
-      }
-    },
-    {
-      "Sid": "RequireRetentionPolicyForSensitiveData",
-      "Effect": "Deny",
-      "Action": [
-        "s3:CreateBucket",
-        "dynamodb:CreateTable"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "Null": {
-          "aws:RequestTag/RetentionPeriod": "true"
-        }
-      }
-    },
-    {
-      "Sid": "PreventDirectDBAccess",
-      "Effect": "Deny",
-      "Action": [
-        "rds:ModifyDBInstance"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ],
-          "rds:PubliclyAccessible": "true"
-        }
-      }
-    },
-    {
-      "Sid": "RequireDataMaskingForNonProd",
-      "Effect": "Deny",
-      "Action": [
-        "rds:CreateDBInstanceReadReplica",
-        "rds:RestoreDBInstanceFromDBSnapshot"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ],
-          "aws:RequestTag/Environment": [
-            "development",
-            "testing",
-            "staging"
-          ]
-        },
-        "StringNotEquals": {
-          "aws:RequestTag/DataMasked": "true"
-        }
-      }
-    },
-    {
-      "Sid": "EnforceAccessLoggingForSensitiveData",
-      "Effect": "Deny",
-      "Action": [
-        "s3:CreateBucket"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/DataClassification": [
-            "Confidential",
-            "Restricted"
-          ]
-        },
-        "StringNotEquals": {
-          "aws:RequestTag/AccessLoggingEnabled": "true"
-        }
-      }
-    }
-  ]
+"Version": "2012-10-17",
+"Statement": [
+{
+"Sid": "DenyUnencryptedS3ObjectUploads",
+"Effect": "Deny",
+"Action": "s3:PutObject",
+"Resource": "*",
+"Condition": {
+"StringNotEquals": {
+"s3:x-amz-server-side-encryption": "aws:kms"
+}
+}
+},
+{
+"Sid": "DenyInsecureTransportForS3",
+"Effect": "Deny",
+"Action": "s3:*",
+"Resource": "*",
+"Condition": {
+"Bool": {
+"aws:SecureTransport": "false"
+}
+}
+},
+{
+"Sid": "DenyPublicS3ACLs",
+"Effect": "Deny",
+"Action": [
+"s3:PutBucketAcl",
+"s3:PutObjectAcl"
+],
+"Resource": "*",
+"Condition": {
+"StringEquals": {
+"s3:x-amz-acl": [
+"public-read",
+"public-read-write",
+"authenticated-read"
+]
+}
+}
+},
+{
+"Sid": "RequireEncryptedRDSCreation",
+"Effect": "Deny",
+"Action": "rds:CreateDBInstance",
+"Resource": "*",
+"Condition": {
+"Bool": {
+"rds:StorageEncrypted": "false"
+}
+}
+},
+{
+"Sid": "DenyPublicRDSCreation",
+"Effect": "Deny",
+"Action": "rds:CreateDBInstance",
+"Resource": "*",
+"Condition": {
+"Bool": {
+"rds:PubliclyAccessible": "true"
+}
+}
+},
+{
+"Sid": "RestrictUnapprovedAWSRegions",
+"Effect": "Deny",
+"NotAction": [
+"iam:*",
+"organizations:*",
+"route53:*",
+"cloudfront:*",
+"support:*"
+],
+"Resource": "*",
+"Condition": {
+"StringNotEquals": {
+"aws:RequestedRegion": [
+"us-east-1",
+"us-west-2"
+]
+}
+}
+}
+]
 }
