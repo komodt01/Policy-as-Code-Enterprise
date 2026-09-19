@@ -1,133 +1,176 @@
-name: Security and Compliance Scanning
+name: Security Analysis
+
 on:
-  schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM UTC
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+schedule:
+- cron: '0 2 * * *'
+push:
+branches: [master]
+paths:
+- 'terraform/**'
+- 'policies/**'
+pull_request:
+branches: [master]
+paths:
+- 'terraform/**'
+- 'policies/**'
 
 jobs:
-  security-scan:
-    runs-on: ubuntu-latest
-    name: Enterprise Security Analysis
-    
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.6.0
-        
-    - name: Install Security Tools
-      run: |
-        # Install tfsec for Terraform security scanning
-        curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
-        
-        # Install checkov for additional security checks
-        pip install checkov
-        
-    - name: Run Terraform Security Scan
-      run: |
-        echo "🔍 Running Terraform security analysis..."
-        tfsec terraform/ --format json --out tfsec-results.json || true
-        
-    - name: Run Checkov Security Analysis
-      run: |
-        echo "🔍 Running Checkov security analysis..."
-        checkov -d terraform/ --framework terraform --output json --output-file checkov-results.json || true
-        
-    - name: Analyze Policy Security
-      run: |
-        echo "🔍 Analyzing Service Control Policy security..."
-        python3 << 'PYTHON'
-import json
-import os
+security-scan:
+runs-on: ubuntu-latest
+name: Terraform and Policy Security Analysis
 
-def analyze_policy_security(policy_path):
-    """Analyze SCP for security best practices"""
-    with open(policy_path, 'r') as f:
-        policy = json.load(f)
-    
-    findings = []
-    
-    # Check for overly permissive policies
-    for statement in policy.get('Statement', []):
-        if statement.get('Effect') == 'Allow' and statement.get('Action') == '*':
-            findings.append('⚠️ Overly permissive Allow statement found')
-        
-        if statement.get('Resource') == '*' and statement.get('Effect') == 'Allow':
-            findings.append('⚠️ Allow statement with wildcard resource')
-    
-    return findings
+```
+steps:
+  - name: Checkout Code
+    uses: actions/checkout@v4
 
-# Analyze all SCP policies
-all_findings = []
-policy_dir = 'policies/aws/scp'
-if os.path.exists(policy_dir):
-    for policy_file in os.listdir(policy_dir):
-        if policy_file.endswith('.json'):
-            policy_path = os.path.join(policy_dir, policy_file)
-            findings = analyze_policy_security(policy_path)
-            if findings:
-                all_findings.extend([f"{policy_file}: {finding}" for finding in findings])
+  - name: Setup Terraform
+    uses: hashicorp/setup-terraform@v3
+    with:
+      terraform_version: 1.6.0
 
-# Generate security report
-with open('security-analysis.md', 'w') as f:
-    f.write("# 🛡️ Security Analysis Report\n\n")
-    f.write(f"**Analysis Date:** {os.popen('date').read().strip()}\n\n")
-    
-    if all_findings:
-        f.write("## ⚠️ Security Findings\n\n")
-        for finding in all_findings:
-            f.write(f"- {finding}\n")
-    else:
-        f.write("## ✅ No Security Issues Found\n\n")
-        f.write("All policies follow security best practices.\n")
-    
-    f.write("\n## 📊 Policy Statistics\n\n")
-    policy_count = len([f for f in os.listdir(policy_dir) if f.endswith('.json')])
-    f.write(f"- Total SCP policies: {policy_count}\n")
-    f.write("- Security controls validated: ✅\n")
-    f.write("- Compliance frameworks: NIST-CSF, SOC2\n")
+  - name: Install Security Tools
+    run: |
+      curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+      pip install checkov
 
-print("✅ Security analysis completed")
-PYTHON
-        
-    - name: Generate Security Dashboard
-      run: |
-        echo "# 🛡️ Enterprise Security Dashboard" > security-dashboard.md
-        echo "**Generated:** $(date)" >> security-dashboard.md
-        echo "" >> security-dashboard.md
-        
-        # Add Terraform security results if available
-        if [ -f tfsec-results.json ]; then
-          echo "## 🔧 Infrastructure Security" >> security-dashboard.md
-          echo "- Terraform security scan: ✅ Completed" >> security-dashboard.md
-          echo "- Configuration validated: ✅ Passed" >> security-dashboard.md
-        fi
-        
-        # Add policy security results
-        if [ -f security-analysis.md ]; then
-          echo "## 📋 Policy Security" >> security-dashboard.md
-          echo "- Service Control Policies: ✅ Analyzed" >> security-dashboard.md
-          echo "- Security best practices: ✅ Validated" >> security-dashboard.md
-        fi
-        
-        echo "" >> security-dashboard.md
-        echo "## 🎯 Compliance Status" >> security-dashboard.md
-        echo "- **NIST Cybersecurity Framework:** ✅ Aligned" >> security-dashboard.md
-        echo "- **SOC 2 Type II:** ✅ Controls implemented" >> security-dashboard.md
-        echo "- **Enterprise Standards:** ✅ Compliant" >> security-dashboard.md
-        
-    - name: Upload Security Reports
-      uses: actions/upload-artifact@v4
-      with:
-        name: security-analysis-reports
-        path: |
-          security-analysis.md
-          security-dashboard.md
-          tfsec-results.json
-          checkov-results.json
+  - name: Run tfsec
+    run: |
+      echo "Running tfsec against Terraform configuration..."
+
+      tfsec terraform/ \
+        --format json \
+        --out tfsec-results.json || true
+
+  - name: Run Checkov
+    run: |
+      echo "Running Checkov against Terraform configuration..."
+
+      checkov \
+        -d terraform/ \
+        --framework terraform \
+        --output json \
+        --output-file checkov-results.json || true
+
+  - name: Analyze AWS Service Control Policies
+    run: |
+      python3 << 'PYTHON'
+      import json
+      import os
+
+      POLICY_DIRECTORY = "policies/aws/scp"
+
+      def analyze_policy(policy_path):
+          """
+          Perform lightweight structural checks against an AWS SCP.
+
+          This is not a complete security or compliance assessment.
+          """
+          findings = []
+
+          try:
+              with open(policy_path, "r", encoding="utf-8") as file:
+                  policy = json.load(file)
+          except (OSError, json.JSONDecodeError) as error:
+              return [f"Unable to analyze policy: {error}"]
+
+          statements = policy.get("Statement", [])
+
+          if not statements:
+              findings.append("Policy contains no statements.")
+
+          for statement in statements:
+              effect = statement.get("Effect")
+              action = statement.get("Action")
+              resource = statement.get("Resource")
+
+              if effect == "Allow" and action == "*":
+                  findings.append(
+                      "Broad Allow statement using wildcard Action detected."
+                  )
+
+              if effect == "Allow" and resource == "*":
+                  findings.append(
+                      "Allow statement using wildcard Resource detected."
+                  )
+
+          return findings
+
+
+      results = []
+
+      if os.path.isdir(POLICY_DIRECTORY):
+          for filename in sorted(os.listdir(POLICY_DIRECTORY)):
+              if filename.endswith(".json"):
+                  path = os.path.join(POLICY_DIRECTORY, filename)
+                  findings = analyze_policy(path)
+
+                  results.append({
+                      "policy": filename,
+                      "findings": findings
+                  })
+
+
+      with open("policy-security-analysis.md", "w", encoding="utf-8") as report:
+          report.write("# Policy Security Analysis\n\n")
+
+          report.write(
+              "This report performs lightweight structural checks against "
+              "AWS Service Control Policy files. It does not represent a "
+              "complete policy-security or compliance assessment.\n\n"
+          )
+
+          for result in results:
+              report.write(f"## {result['policy']}\n\n")
+
+              if result["findings"]:
+                  for finding in result["findings"]:
+                      report.write(f"- Review: {finding}\n")
+              else:
+                  report.write(
+                      "- No findings were identified by the checks implemented "
+                      "in this script.\n"
+                  )
+
+              report.write("\n")
+
+      print("Policy analysis completed.")
+      PYTHON
+
+  - name: Generate Security Analysis Summary
+    run: |
+      echo "# Security Analysis Summary" > security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+      echo "**Generated:** $(date)" >> security-analysis-summary.md
+      echo "**Commit:** ${{ github.sha }}" >> security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+
+      echo "## Analysis Performed" >> security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+      echo "- tfsec analysis of Terraform configuration" >> security-analysis-summary.md
+      echo "- Checkov analysis of Terraform configuration" >> security-analysis-summary.md
+      echo "- Lightweight structural analysis of AWS SCP files" >> security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+
+      echo "## Enforcement Behavior" >> security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+      echo "tfsec and Checkov are currently configured as reporting controls." >> security-analysis-summary.md
+      echo "Scanner findings do not automatically fail this workflow." >> security-analysis-summary.md
+      echo "Results require review to determine severity, applicability, remediation, or accepted exception." >> security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+
+      echo "## Scope Limitation" >> security-analysis-summary.md
+      echo "" >> security-analysis-summary.md
+      echo "Successful completion of this workflow does not establish regulatory compliance, security certification, or production readiness." >> security-analysis-summary.md
+      echo "The workflow provides technical evidence that supports broader security architecture, risk, and governance review." >> security-analysis-summary.md
+
+  - name: Upload Security Analysis Reports
+    uses: actions/upload-artifact@v4
+    with:
+      name: security-analysis-reports
+      path: |
+        policy-security-analysis.md
+        security-analysis-summary.md
+        tfsec-results.json
+        checkov-results.json
+```
