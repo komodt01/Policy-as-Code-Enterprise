@@ -1,175 +1,128 @@
-name: Documentation Quality Assurance
+name: Documentation Quality Check
+
 on:
-  push:
-    branches: [ main, develop ]
-    paths: 
-      - '**/*.md'
-      - 'docs/**'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '**/*.md'
-      - 'docs/**'
+push:
+branches: [master]
+paths:
+- '**/*.md'
+- 'docs/**'
+pull_request:
+branches: [master]
+paths:
+- '**/*.md'
+- 'docs/**'
 
 jobs:
-  doc-quality:
-    runs-on: ubuntu-latest
-    name: Enterprise Documentation Standards
-    
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Install Documentation Tools
-      run: |
-        npm install -g markdownlint-cli
-        npm install -g markdown-link-check
-        
-    - name: Lint Markdown Files
-      run: |
-        echo "📝 Linting markdown files for enterprise standards..."
-        markdownlint '**/*.md' --ignore node_modules --ignore .github || true
-        
-    - name: Check Documentation Links
-      run: |
-        echo "🔗 Checking documentation links..."
-        find . -name "*.md" -not -path "./node_modules/*" -not -path "./.github/*" | head -10 | xargs -I {} markdown-link-check {} || true
-        
-    - name: Validate Business Documentation
-      run: |
-        echo "💼 Validating business documentation completeness..."
-        python3 << 'PYTHON'
-import os
-import json
+documentation-check:
+runs-on: ubuntu-latest
+name: Validate Documentation
 
-def check_business_docs():
-    """Check for required business documentation"""
-    required_docs = [
-        'README.md',
-        'business-case',
-        'docs',
-        'CONTRIBUTING.md',
-        'LICENSE'
-    ]
-    
-    findings = []
-    for doc in required_docs:
-        if not os.path.exists(doc):
-            findings.append(f"❌ Missing: {doc}")
-        else:
-            findings.append(f"✅ Present: {doc}")
-    
-    return findings
+```
+steps:
+  - name: Checkout Code
+    uses: actions/checkout@v4
 
-def check_compliance_docs():
-    """Check for compliance documentation"""
-    compliance_indicators = [
-        'compliance',
-        'NIST',
-        'SOC',
-        'HIPAA',
-        'governance'
-    ]
-    
-    findings = []
-    readme_path = 'README.md'
-    if os.path.exists(readme_path):
-        with open(readme_path, 'r') as f:
-            content = f.read().lower()
-            
-        for indicator in compliance_indicators:
-            if indicator.lower() in content:
-                findings.append(f"✅ {indicator} documentation found")
-            else:
-                findings.append(f"⚠️ {indicator} documentation missing")
-    
-    return findings
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: '18'
 
-# Generate documentation report
-business_findings = check_business_docs()
-compliance_findings = check_compliance_docs()
+  - name: Install Documentation Tools
+    run: |
+      npm install -g markdownlint-cli
+      npm install -g markdown-link-check
 
-with open('doc-quality-report.md', 'w') as f:
-    f.write("# 📚 Documentation Quality Report\n\n")
-    f.write(f"**Generated:** {os.popen('date').read().strip()}\n\n")
-    
-    f.write("## 📋 Business Documentation\n\n")
-    for finding in business_findings:
-        f.write(f"{finding}\n")
-    
-    f.write("\n## 🏛️ Compliance Documentation\n\n")
-    for finding in compliance_findings:
-        f.write(f"{finding}\n")
-    
-    f.write("\n## 🎯 Documentation Standards\n\n")
-    f.write("- Enterprise architecture documentation: ✅\n")
-    f.write("- Technical implementation guides: ✅\n")
-    f.write("- Business justification: ✅\n")
-    f.write("- Compliance mapping: ✅\n")
+  - name: Lint Markdown Files
+    run: |
+      echo "Checking Markdown formatting..."
 
-print("✅ Documentation quality check completed")
-PYTHON
-        
-    - name: Check for Fictional Data Disclaimers
-      run: |
-        echo "⚠️ Checking for proper fictional data disclaimers..."
-        python3 << 'PYTHON'
-import os
-import re
+      markdownlint '**/*.md' \
+        --ignore node_modules \
+        --ignore .github || true
 
-def check_disclaimers():
-    """Check for fictional data disclaimers"""
-    disclaimer_keywords = ['fictional', 'demonstration', 'example', 'asterisk']
-    financial_patterns = [r'\$[\d,]+', r'\d+%', r'\d+\.\d+%']
-    
-    findings = []
-    
-    for root, dirs, files in os.walk('.'):
-        for file in files:
-            if file.endswith('.md'):
-                file_path = os.path.join(root, file)
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                    
-                    # Check for financial figures
-                    has_financial = any(re.search(pattern, content) for pattern in financial_patterns)
-                    
-                    if has_financial:
-                        # Check for disclaimer
-                        has_disclaimer = any(keyword in content.lower() for keyword in disclaimer_keywords)
-                        
-                        if has_disclaimer:
-                            findings.append(f"✅ {file_path}: Has financial data with disclaimer")
-                        else:
-                            findings.append(f"⚠️ {file_path}: Has financial data but missing disclaimer")
-                
-                except Exception as e:
-                    findings.append(f"❌ {file_path}: Error reading file")
-    
-    return findings
+  - name: Check Documentation Links
+    run: |
+      echo "Checking documentation links..."
 
-disclaimer_findings = check_disclaimers()
+      find . \
+        -name "*.md" \
+        -not -path "./node_modules/*" \
+        -not -path "./.github/*" \
+        -print0 |
+      xargs -0 -r -n 1 markdown-link-check || true
 
-with open('disclaimer-report.md', 'w') as f:
-    f.write("# ⚠️ Fictional Data Disclaimer Report\n\n")
-    f.write("Ensuring proper disclaimers for demonstration data.\n\n")
-    
-    for finding in disclaimer_findings:
-        f.write(f"{finding}\n")
+  - name: Validate Core Documentation
+    run: |
+      python3 << 'PYTHON'
+      import os
 
-print("✅ Disclaimer check completed")
-PYTHON
-        
-    - name: Upload Documentation Reports
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation-quality-reports
-        path: |
-          doc-quality-report.md
-          disclaimer-report.md
+      required_items = [
+          "README.md",
+          "business-case",
+          "CONTRIBUTING.md",
+          "LICENSE"
+      ]
+
+      results = []
+
+      for item in required_items:
+          if os.path.exists(item):
+              results.append((item, "Present"))
+          else:
+              results.append((item, "Missing"))
+
+      with open(
+          "documentation-quality-report.md",
+          "w",
+          encoding="utf-8"
+      ) as report:
+
+          report.write("# Documentation Quality Report\n\n")
+
+          report.write("## Core Documentation\n\n")
+
+          for item, status in results:
+              report.write(f"- {item}: {status}\n")
+
+          report.write("\n## Automated Checks\n\n")
+          report.write(
+              "- Markdown formatting review executed\n"
+          )
+          report.write(
+              "- Documentation link review executed\n"
+          )
+          report.write(
+              "- Core documentation presence checked\n"
+          )
+
+          report.write("\n## Scope Limitation\n\n")
+          report.write(
+              "These automated checks evaluate documentation structure, "
+              "formatting, links, and file presence. They do not determine "
+              "whether architecture decisions are correct, whether security "
+              "controls are effective, or whether regulatory compliance "
+              "has been achieved.\n"
+          )
+
+      missing = [
+          item
+          for item, status in results
+          if status == "Missing"
+      ]
+
+      if missing:
+          print(
+              "Missing core documentation: "
+              + ", ".join(missing)
+          )
+          raise SystemExit(1)
+
+      print("Core documentation validation completed.")
+      PYTHON
+
+  - name: Upload Documentation Report
+    uses: actions/upload-artifact@v4
+    with:
+      name: documentation-quality-report
+      path: documentation-quality-report.md
+```
