@@ -1,110 +1,59 @@
 # Technical Case Study — Enterprise Policy-as-Code Framework
 
-## Executive Technical Summary
+## Technical Summary
 
-This case study examines the design of an enterprise Policy-as-Code architecture that converts selected cloud security and governance requirements into repeatable, automated controls.
+This project demonstrates an AWS-focused Policy-as-Code architecture for translating repeatable enterprise governance requirements into version-controlled preventive controls.
 
-The implemented foundation uses **AWS Organizations, Service Control Policies (SCPs), Terraform, GitHub Actions, AWS CloudTrail, and AWS Config**. The architecture demonstrates how security requirements can move from documentation and manual review into version-controlled governance controls while maintaining human oversight for exceptions, risk acceptance, and architecture decisions.
+The implementation uses:
 
-The primary architectural objective was not to automate every security decision. It was to identify which decisions could safely become standardized guardrails and which decisions still required contextual security and business review.
+* AWS Organizations Service Control Policies (SCPs)
+* Terraform for policy definition management
+* GitHub for version control and change governance
+* GitHub Actions for automated validation
+* tfsec and Checkov for infrastructure security analysis
+* Python for lightweight SCP analysis
 
----
-
-## 1. Architecture Problem
-
-As cloud adoption expands, relying entirely on manual security reviews creates several challenges:
-
-* Teams can interpret security standards differently.
-* Known configuration risks are repeatedly evaluated during architecture reviews.
-* Security controls may be applied inconsistently across accounts.
-* Misconfigurations may not be discovered until after deployment.
-* Governance decisions can become difficult to trace.
-* Exceptions can persist without formal ownership or expiration.
-* Security architecture teams can spend time repeatedly reviewing problems that could be addressed through reusable controls.
-
-The architecture needed to provide scalable governance without creating controls so restrictive that they prevented legitimate business activity.
+The architecture separates **automated enforcement from contextual risk decisions**. Requirements that are sufficiently clear and technically enforceable can become automated guardrails, while exceptions, compensating controls, business impact, and risk acceptance remain part of architecture and governance review.
 
 ---
 
-## 2. Architecture Objectives
+## Architecture Problem
 
-The design established six primary objectives.
+Enterprise cloud governance becomes difficult to scale when security requirements depend heavily on:
 
-### Consistent Enforcement
+* Manual architecture reviews
+* Individual interpretation of security standards
+* Repetitive security findings
+* Late-stage configuration reviews
+* Manually collected evidence
+* Inconsistent exception handling
 
-Translate appropriate security requirements into reusable controls that can be applied consistently across AWS accounts.
+The architectural challenge is not simply to automate more security controls.
 
-### Early Validation
+The challenge is determining:
 
-Move security validation earlier in the infrastructure lifecycle so violations can be identified before or during deployment rather than relying exclusively on post-deployment detection.
-
-### Traceability
-
-Maintain policy definitions and infrastructure configuration in version control so governance changes can be reviewed and traced.
-
-### Risk-Based Enforcement
-
-Differentiate between requirements appropriate for preventive enforcement and those better handled through detective controls.
-
-### Controlled Exceptions
-
-Provide a governance model for situations where workloads cannot immediately comply with a standard control.
-
-### Extensibility
-
-Establish an architecture that could later be adapted to Azure and Google Cloud while allowing each provider to use its native governance mechanisms.
+> Which security decisions can be safely converted into automated guardrails, and which decisions still require contextual architecture and risk review?
 
 ---
 
-## 3. Implemented Architecture
+## Architecture Objectives
 
-The AWS implementation consists of several control layers.
+The project was designed around six objectives:
 
-### Governance Layer
-
-**AWS Organizations** provides the organizational boundary across which enterprise governance can be applied.
-
-**Service Control Policies** establish preventive permission boundaries for governed AWS accounts.
-
-SCPs are used as organizational guardrails rather than substitutes for workload-level IAM policies.
-
-### Infrastructure-as-Code Layer
-
-**Terraform** defines and manages governance infrastructure.
-
-Using Infrastructure-as-Code allows governance configuration to be:
-
-* version controlled,
-* reviewed,
-* reproduced,
-* tested,
-* and associated with documented architecture decisions.
-
-### Validation Layer
-
-**GitHub Actions** provides an automated validation point for policy and infrastructure changes.
-
-This creates a workflow in which proposed changes can be evaluated before they progress toward deployment.
-
-### Audit and Monitoring Layer
-
-**AWS CloudTrail** provides API activity and change records.
-
-**AWS Config** supports configuration history and continuous evaluation patterns.
-
-These detective capabilities complement preventive SCP controls and provide evidence for governance and compliance activities.
+1. Translate repeatable governance requirements into version-controlled technical policies.
+2. Apply preventive controls where requirements are sufficiently clear for automated enforcement.
+3. Validate policy and infrastructure changes before enforcement.
+4. Preserve human review for contextual risk decisions.
+5. Maintain traceability between governance requirements and technical implementation.
+6. Limit enforcement blast radius through deliberate deployment and attachment decisions.
 
 ---
 
-## 4. Control Flow
+## Architecture Overview
 
-The logical control flow is:
+The implemented control flow is:
 
-**Enterprise Security Requirement**
-
-↓
-
-**Architecture and Risk Evaluation**
+**Security Requirement**
 
 ↓
 
@@ -112,7 +61,307 @@ The logical control flow is:
 
 ↓
 
-**Version Control / Pull Request**
+**Git Version Control**
+
+↓
+
+**GitHub Actions Validation**
+
+↓
+
+**Terraform**
+
+↓
+
+**AWS Organizations SCP**
+
+↓
+
+**Controlled Enforcement Decision**
+
+Policy creation and policy enforcement are intentionally separated.
+
+Terraform manages the SCP definitions, but the project does not automatically attach the policies to AWS organizational units or accounts.
+
+This creates an explicit governance point between **technically valid policy** and **enterprise enforcement**.
+
+---
+
+## AWS Organizations Service Control Policies
+
+Three SCP definitions represent different governance concerns.
+
+### Security Baseline Policy
+
+The Security Baseline Policy establishes selected foundational security guardrails.
+
+Controls include:
+
+* Requiring environment metadata for EC2 launches
+* Preventing CloudTrail disablement
+* Preventing AWS Config disablement
+* Preventing GuardDuty disablement
+* Preventing Security Hub disablement
+
+These controls assume that centrally governed security services have already been established where applicable.
+
+The project does not deploy CloudTrail, AWS Config, GuardDuty, or Security Hub.
+
+The SCP demonstrates how organization-level governance can protect those capabilities from unauthorized disablement.
+
+---
+
+### Cost Controls Policy
+
+The Cost Controls Policy demonstrates preventive financial and resource-governance controls.
+
+Controls include:
+
+* Restricting selected high-cost EC2 instance types
+* Requiring cost-center metadata
+* Requiring project metadata
+* Requiring environment metadata
+* Restricting selected AWS regions
+* Restricting large EBS volume creation without approved governance metadata
+
+The architecture deliberately avoids using SCPs for every cost-management requirement.
+
+Capabilities such as:
+
+* Automatic shutdown
+* Resource scheduling
+* Budget management
+* Cost anomaly detection
+* Resource optimization
+
+would be better implemented through other AWS services, automation, or FinOps processes.
+
+---
+
+### Data Protection Policy
+
+The Data Protection Policy establishes selected preventive data-security boundaries.
+
+Controls include:
+
+* Requiring KMS-backed server-side encryption for S3 object uploads
+* Preventing insecure transport to S3
+* Restricting public S3 ACLs
+* Requiring encryption when creating RDS databases
+* Preventing publicly accessible RDS database creation
+* Restricting workload activity to selected AWS regions
+
+The policy intentionally does not attempt to provide a complete data-protection architecture.
+
+Additional capabilities such as:
+
+* Data classification
+* Sensitive-data discovery
+* DLP
+* Key lifecycle management
+* Retention enforcement
+* Access logging
+* Continuous configuration monitoring
+
+would require additional services and controls.
+
+---
+
+## Terraform Implementation
+
+Terraform manages the three AWS Organizations SCP definitions:
+
+* `aws_organizations_policy.security_baseline`
+* `aws_organizations_policy.cost_controls`
+* `aws_organizations_policy.data_protection`
+
+Each Terraform resource loads its policy logic from the corresponding JSON document under:
+
+`policies/aws/scp/`
+
+This separates the policy definition from the Terraform infrastructure configuration while keeping both under version control.
+
+Terraform outputs expose:
+
+* Security Baseline Policy ID
+* Cost Controls Policy ID
+* Data Protection Policy ID
+* Consolidated map of managed SCP policy IDs
+
+This provides a repeatable mechanism for managing the policy definitions without automatically expanding their enforcement scope.
+
+---
+
+## Policy Definition vs. Policy Attachment
+
+One of the most important architecture decisions in the project is the separation of **policy creation from policy attachment**.
+
+Terraform creates and manages the SCP definitions but does not automatically attach them to organizational units or AWS accounts.
+
+This is deliberate.
+
+An SCP can change the effective permission boundary across multiple AWS accounts. A syntactically valid policy can therefore still cause significant operational impact if its scope or logic is incorrect.
+
+The intended lifecycle is:
+
+**Define → Validate → Review → Test → Approve → Attach → Observe → Expand**
+
+This provides a governance checkpoint before preventive controls affect workloads.
+
+---
+
+## CI Validation
+
+GitHub Actions provides automated validation when Terraform or policy files change.
+
+The Policy Validation Pipeline performs:
+
+* AWS SCP JSON syntax validation
+* Terraform formatting checks
+* Terraform initialization without backend configuration
+* Terraform configuration validation
+* Validation-report generation
+
+These checks determine whether the policy documents and Terraform configuration meet defined structural requirements.
+
+They do not determine whether a policy:
+
+* Is appropriate for every workload
+* Has acceptable business impact
+* Is ready for organization-wide enforcement
+* Meets every regulatory requirement
+* Is operationally safe in every AWS account
+
+Those decisions require additional testing and architecture review.
+
+---
+
+## Security Analysis
+
+A separate GitHub Actions workflow performs security analysis using:
+
+* tfsec
+* Checkov
+* Python-based SCP analysis
+
+### tfsec
+
+tfsec analyzes Terraform configuration for known security-related infrastructure patterns.
+
+### Checkov
+
+Checkov performs additional static analysis of the Terraform configuration against security and configuration rules.
+
+### Python SCP Analysis
+
+A lightweight Python component examines SCP documents for selected structural security concerns.
+
+The Python analysis is intentionally limited and does not claim to provide comprehensive AWS policy validation.
+
+---
+
+## Security Scan Enforcement Model
+
+tfsec and Checkov currently operate as **reporting controls rather than blocking gates**.
+
+The workflow captures findings but does not automatically fail because a scanner identifies an issue.
+
+This is a deliberate distinction between:
+
+**Detection**
+
+and
+
+**Enforcement**
+
+A scanner finding may represent:
+
+* A legitimate vulnerability
+* A configuration weakness
+* A contextual risk
+* A false positive
+* An accepted exception
+* A control that requires further investigation
+
+Findings therefore require review before determining whether remediation or enforcement is appropriate.
+
+A mature implementation could later convert selected high-confidence findings into blocking gates once severity thresholds, exception handling, and operational impact are understood.
+
+---
+
+## Preventive vs. Detective Controls
+
+A central architecture decision was determining which requirements should become SCPs.
+
+### Preventive Controls
+
+Preventive enforcement is appropriate when:
+
+* The requirement is clearly defined
+* AWS can reliably evaluate the required condition
+* Violation creates meaningful risk
+* Expected behavior is consistent across the governed scope
+* Legitimate exceptions are understood
+* Blocking the action is operationally acceptable
+
+Examples demonstrated in the project include:
+
+* Preventing security-service disablement
+* Preventing insecure S3 transport
+* Preventing selected public-access configurations
+* Requiring selected encryption controls
+* Restricting selected high-cost resources
+
+---
+
+### Detective Controls
+
+Some requirements require context that makes preventive enforcement inappropriate.
+
+Examples include:
+
+* Configuration drift
+* Resource lifecycle management
+* Complex data-classification requirements
+* Logging configuration quality
+* Retention requirements
+* Resource optimization
+* Controls requiring workload-specific context
+
+Potential mechanisms include:
+
+* AWS Config
+* Security Hub
+* EventBridge automation
+* SIEM monitoring
+* Cloud-native security services
+* Architecture review
+
+The architectural principle is:
+
+> Use the control mechanism that best matches the risk and enforcement requirement rather than forcing every governance requirement into an SCP.
+
+---
+
+## Architecture Review Integration
+
+Policy-as-Code complements architecture governance rather than replacing it.
+
+A recurring security finding identified through architecture review can follow this lifecycle:
+
+**Architecture Review**
+
+↓
+
+**Recurring Risk**
+
+↓
+
+**Enterprise Security Standard**
+
+↓
+
+**Policy-as-Code Requirement**
 
 ↓
 
@@ -120,397 +369,260 @@ The logical control flow is:
 
 ↓
 
-**Approved Terraform Change**
+**Controlled Enforcement**
 
-↓
+This allows repeatable architecture decisions to become reusable guardrails.
 
-**AWS Organizations**
+Architecture review can then focus more heavily on:
 
-↓
+* Exceptions
+* Novel risks
+* Business tradeoffs
+* New technologies
+* Compensating controls
+* Cross-domain dependencies
+* Risk acceptance
 
-**Service Control Policy Enforcement**
-
-↓
-
-**AWS Accounts and Workloads**
-
-↓
-
-**CloudTrail / AWS Config Monitoring**
-
-This separates the original business or security requirement from its technical enforcement mechanism.
-
-That separation is important because enterprise requirements can remain relatively stable while implementation mechanisms change over time.
+rather than repeatedly evaluating the same established requirement.
 
 ---
 
-## 5. Key Architecture Decision — What Should Be Automated?
+## Exception Architecture
 
-One of the most important design decisions was determining which security requirements should become Policy-as-Code.
+Preventive controls require a defined exception process.
 
-Not every requirement should.
+An exception should identify:
 
-A control is a stronger candidate for automation when it is:
+* Affected policy
+* Affected workload or account
+* Business justification
+* Security risk
+* Compensating controls
+* Accountable owner
+* Approval authority
+* Expiration date
+* Remediation plan
 
-* deterministic,
-* broadly applicable,
-* technically measurable,
-* associated with significant risk,
-* unlikely to require frequent exceptions,
-* and unlikely to cause unacceptable operational disruption.
+Exceptions should not silently weaken the enterprise baseline.
 
-Examples include organizational restrictions that should apply consistently across large portions of the cloud environment.
-
-Requirements involving significant business context or workload-specific risk may remain part of an architecture review rather than becoming an unconditional automated block.
-
-### Architecture Principle
-
-**Automate repeatable security decisions; preserve human governance for contextual risk decisions.**
+They should represent explicit and traceable risk decisions.
 
 ---
 
-## 6. Preventive vs. Detective Enforcement
+## Security Decision Traceability
 
-The architecture intentionally uses both preventive and detective controls.
+The architecture supports a governance chain from requirement through enforcement:
 
-### Preventive Controls
+**Business or Regulatory Requirement**
 
-AWS SCPs can prevent actions that violate organizational security boundaries.
+↓
 
-Preventive enforcement is appropriate when allowing the action would create unacceptable risk and legitimate exceptions are limited.
+**Enterprise Security Standard**
 
-Advantages include:
+↓
 
-* violations are prevented rather than discovered later,
-* enforcement is consistent,
-* remediation effort is reduced,
-* and baseline requirements do not depend solely on individual teams.
+**Architecture Requirement**
 
-The tradeoff is operational impact.
+↓
 
-A poorly designed preventive policy can interfere with legitimate workloads across multiple AWS accounts.
+**Policy-as-Code Control**
 
-### Detective Controls
+↓
 
-AWS Config, CloudTrail, and monitoring mechanisms can identify configuration changes or policy-relevant activity without necessarily blocking the action.
+**Terraform-Managed Policy**
 
-Detective controls are useful when:
+↓
 
-* business context matters,
-* legacy systems require transition time,
-* automatic blocking could create availability risk,
-* or investigation is required before remediation.
+**Automated Validation**
 
-### Architecture Decision
+↓
 
-The framework therefore avoids treating every security requirement as a mandatory blocking control.
+**Architecture / Security Review**
 
-Enforcement is selected according to risk and operational impact.
+↓
+
+**Controlled Enforcement**
+
+↓
+
+**Monitoring Evidence**
+
+↓
+
+**Exception or Risk Decision**
+
+This provides traceability between business requirements, architecture decisions, technical controls, and governance outcomes.
 
 ---
 
-## 7. Policy Deployment Strategy
+## Compliance Considerations
 
-Enterprise-wide policy changes can have a large blast radius.
-
-For that reason, governance controls should not automatically move from development to organization-wide enforcement.
-
-A safer deployment model is:
-
-**Develop → Validate → Test → Limited Scope → Observe → Expand**
-
-This approach allows architecture and operations teams to evaluate:
-
-* unexpected denied actions,
-* workload dependencies,
-* false assumptions,
-* exception requirements,
-* and operational impact.
-
-High-impact preventive controls require more conservative rollout than low-impact detective controls.
-
----
-
-## 8. Exception Architecture
-
-A mature Policy-as-Code architecture must assume exceptions will occur.
-
-The objective is not to eliminate exceptions but to make them visible, governed, temporary where possible, and associated with accountable ownership.
-
-An exception record should identify:
-
-* affected policy,
-* affected workload,
-* business justification,
-* identified security risk,
-* compensating control,
-* accountable owner,
-* approving authority,
-* expiration date,
-* and remediation plan.
-
-### Why Expiration Matters
-
-Without expiration criteria, temporary exceptions can become permanent undocumented architecture.
-
-Time-bound exceptions create a mechanism for reassessment as systems, controls, and business requirements change.
-
----
-
-## 9. Architecture Review Integration
-
-Policy-as-Code does not replace an Architecture Review Board or security architecture function.
-
-Instead, architecture reviews become one of the inputs into policy development.
-
-For example, if architecture reviews repeatedly identify the same cloud configuration problem, the organization can evaluate whether that requirement should become a standardized guardrail.
-
-The resulting governance cycle is:
-
-**Architecture Review**
-
-↓
-
-**Recurring Risk Identified**
-
-↓
-
-**Enterprise Standard Defined**
-
-↓
-
-**Automated Policy Developed**
-
-↓
-
-**Guardrail Deployed**
-
-↓
-
-**Effectiveness Monitored**
-
-↓
-
-**Standard Reassessed**
-
-This allows architecture governance to mature from repeatedly reviewing known problems toward establishing reusable patterns and controls.
-
----
-
-## 10. Security Decision Traceability
-
-Policy automation introduces another architectural requirement: organizations must be able to determine why a policy exists.
-
-A policy should therefore be traceable to one or more sources such as:
-
-* enterprise security standard,
-* architecture decision,
-* regulatory requirement,
-* risk assessment,
-* audit finding,
-* incident lesson,
-* or approved cloud governance requirement.
-
-Version control provides technical history, but version history alone does not explain business or security rationale.
-
-Architecture documentation should preserve both.
-
----
-
-## 11. Compliance Considerations
-
-Policy-as-Code can support compliance by creating consistent technical enforcement and repeatable evidence.
-
-The project considers alignment with frameworks including:
+The architecture can support technical controls and evidence associated with frameworks such as:
 
 * NIST Cybersecurity Framework
 * NIST SP 800-53
 * PCI DSS
 * ISO/IEC 27001
-* HIPAA Security Rule
+* HIPAA security requirements
 * SOX-related technology controls
 
-However, automated cloud policies represent only part of a compliance program.
+Policy-as-Code does not establish compliance by itself.
 
-Many requirements depend on:
+Compliance depends on the broader combination of:
 
-* processes,
-* people,
-* approvals,
-* physical controls,
-* contracts,
-* documentation,
-* risk management,
-* and organizational governance.
+* Governance
+* People
+* Processes
+* Technical controls
+* Evidence
+* Operating effectiveness
+* Organizational scope
+* Risk management
 
-Therefore:
-
-**Passing automated policy checks does not equal compliance.**
-
-Policy-as-Code provides evidence and enforcement for selected technical requirements within the broader compliance program.
+Passing an automated policy-validation pipeline therefore should not be interpreted as proof of regulatory compliance.
 
 ---
 
-## 12. Multi-Cloud Design Consideration
+## Multi-Cloud Considerations
 
-The implemented foundation is AWS-based.
+The implemented technical foundation is AWS-focused.
 
-A future multi-cloud implementation should standardize governance **outcomes** rather than require identical technical controls.
+Comparable governance patterns could use provider-native capabilities such as:
 
-For example:
+| Cloud Provider  | Governance Mechanism                   |
+| --------------- | -------------------------------------- |
+| AWS             | Organizations Service Control Policies |
+| Microsoft Azure | Azure Policy and Management Groups     |
+| Google Cloud    | Organization Policy Service            |
 
-| Governance Capability     | AWS                      | Azure                        | Google Cloud           |
-| ------------------------- | ------------------------ | ---------------------------- | ---------------------- |
-| Organizational governance | AWS Organizations        | Management Groups            | Organization / Folders |
-| Preventive policy         | Service Control Policies | Azure Policy                 | Organization Policy    |
-| Identity governance       | IAM                      | Azure RBAC / Entra ID        | Cloud IAM              |
-| Audit logging             | CloudTrail               | Azure Monitor / Activity Log | Cloud Audit Logs       |
-| Infrastructure-as-Code    | Terraform                | Terraform                    | Terraform              |
+The governance principles can remain consistent across cloud providers, but their technical implementations differ.
 
-This approach maintains enterprise governance objectives while respecting provider-specific architecture.
+Policy syntax, inheritance, available conditions, exception mechanisms, and enforcement behavior are provider-specific.
 
----
-
-## 13. Key Risks and Mitigations
-
-### Risk: Overly Restrictive Policies
-
-A preventive policy could disrupt legitimate workloads.
-
-**Mitigation:** Testing, limited-scope rollout, monitoring, and documented exceptions.
-
-### Risk: Policy Sprawl
-
-Too many policies can become difficult to understand and maintain.
-
-**Mitigation:** Ownership, naming standards, lifecycle management, documentation, and periodic review.
-
-### Risk: Governance Bypass
-
-Teams may attempt to avoid controls when governance creates excessive friction.
-
-**Mitigation:** Clear requirements, transparent exception processes, architecture engagement, and proportional controls.
-
-### Risk: Legacy Compatibility
-
-Existing workloads may not immediately satisfy new standards.
-
-**Mitigation:** Compensating controls, time-bound exceptions, and remediation plans.
-
-### Risk: False Assurance
-
-Successful automated policy evaluation can create the impression that the environment is fully secure.
-
-**Mitigation:** Maintain complementary architecture reviews, threat modeling, vulnerability management, logging, monitoring, and incident response.
+Azure and Google Cloud are therefore treated as **reference architecture extensions**, not implemented components of this project.
 
 ---
 
-## 14. Architecture Tradeoffs
+## Architecture Decisions and Tradeoffs
 
-### Centralized Governance vs. Team Autonomy
+### Native AWS Governance Controls
 
-Centralized guardrails improve consistency but can reduce workload-team flexibility.
+AWS Organizations SCPs provide centralized preventive governance.
 
-The architecture favors centralized enforcement for high-value enterprise requirements while leaving workload-specific decisions with application and platform teams.
+**Benefit:** Consistent organization-level permission boundaries.
 
-### Prevention vs. Availability
-
-Blocking risky actions reduces exposure but can create operational impact.
-
-The architecture uses risk-based selection rather than defaulting every requirement to preventive enforcement.
-
-### Standardization vs. Cloud-Native Design
-
-A single governance model simplifies enterprise oversight, but AWS, Azure, and Google Cloud have different policy capabilities.
-
-The architecture standardizes desired security outcomes while allowing provider-specific implementations.
-
-### Automation vs. Human Judgment
-
-Automation improves consistency and scale but cannot evaluate every business context.
-
-The architecture deliberately preserves human review for exceptions, compensating controls, and risk acceptance.
+**Tradeoff:** Incorrect controls can have a large blast radius.
 
 ---
 
-## 15. Limitations
+### Terraform-Managed Policies
 
-This project is a portfolio implementation and architecture demonstration rather than a production enterprise deployment.
+Terraform provides repeatability, version control, and reviewability.
 
-The implemented foundation focuses on AWS.
+**Benefit:** Policy definitions become part of a controlled infrastructure lifecycle.
 
-Azure and Google Cloud represent reference architecture extensions and were not implemented as part of the current project.
-
-The project does not attempt to demonstrate every possible enterprise policy, compliance control, exception workflow, or monitoring integration.
-
-Production adoption would require additional consideration of:
-
-* organizational structure,
-* workload inventory,
-* existing cloud controls,
-* regulatory requirements,
-* deployment pipelines,
-* identity architecture,
-* operational ownership,
-* exception approval authority,
-* monitoring integration,
-* and change-management processes.
+**Tradeoff:** Terraform validation cannot determine whether a policy is appropriate for every workload.
 
 ---
 
-## 16. Architecture Lessons
+### Separate Definition from Attachment
 
-Several architectural lessons emerge from the project.
+Policies are managed without automatic account or OU attachment.
 
-### Policy-as-Code Is a Governance Capability
+**Benefit:** Creates a deliberate review point before enforcement.
 
-The value is not simply converting policies into code.
-
-The larger objective is creating a repeatable relationship between enterprise requirements, architecture decisions, technical enforcement, and evidence.
-
-### Prevention Requires Greater Design Discipline
-
-Preventive controls can reduce risk significantly, but their blast radius makes testing and staged deployment essential.
-
-### Exceptions Are Part of the Architecture
-
-An enterprise control model without an exception process is incomplete.
-
-### Automation Should Reduce Repetitive Architecture Work
-
-Architecture teams should not repeatedly solve the same deterministic security problem.
-
-Where appropriate, recurring findings should evolve into standards, reusable patterns, and automated guardrails.
-
-### Compliance Is an Outcome of a Larger System
-
-Technical policy enforcement contributes to compliance but cannot replace broader governance, risk management, and organizational controls.
+**Tradeoff:** Additional steps are required to move a policy into enforcement.
 
 ---
 
-## 17. Security Architect Perspective
+### CI Validation Before Enforcement
 
-The primary security architecture responsibility in Policy-as-Code is not writing individual policy statements.
+GitHub Actions validates policy and Terraform changes.
 
-It is determining:
+**Benefit:** Structural problems can be identified earlier.
 
-* which risks warrant standardized controls,
-* where those controls should be enforced,
-* whether enforcement should block or detect,
-* what operational impact is acceptable,
-* how exceptions should be governed,
-* how decisions remain traceable,
-* how controls align with enterprise standards,
-* and when policies should be modified or retired.
+**Tradeoff:** Automated validation cannot replace behavioral testing or architecture review.
 
-The technical implementation enables those decisions.
+---
 
-The architecture determines whether the resulting governance system is secure, scalable, operationally sustainable, and aligned with business requirements.
+### Non-Blocking Security Scanning
+
+tfsec and Checkov initially operate as reporting controls.
+
+**Benefit:** Findings can be evaluated for severity, applicability, and false positives before blocking thresholds are established.
+
+**Tradeoff:** Scanner findings do not automatically stop a change.
+
+---
+
+### Multiple Control Types
+
+Not every governance requirement is implemented through an SCP.
+
+**Benefit:** Controls are selected according to their technical suitability and required enforcement point.
+
+**Tradeoff:** Enterprise governance requires coordination across multiple security services and control mechanisms.
+
+---
+
+## Risks and Mitigations
+
+| Risk                             | Architectural Response                                                       |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| Excessively restrictive SCP      | Separate policy definition from attachment                                   |
+| Organization-wide blast radius   | Use limited scope and phased enforcement                                     |
+| Incorrect policy logic           | Combine automated validation with behavioral testing and architecture review |
+| Scanner false positives          | Review findings before converting them into blocking gates                   |
+| Uncontrolled exceptions          | Require explicit ownership, approval, expiration, and compensating controls  |
+| Configuration drift              | Supplement preventive controls with detective monitoring                     |
+| False confidence from automation | Separate validation results from security and compliance conclusions         |
+| Multi-cloud inconsistency        | Maintain common governance principles while using provider-native controls   |
+
+---
+
+## Implementation Boundaries
+
+This is a portfolio architecture project demonstrating an AWS Policy-as-Code foundation.
+
+It does not represent a production enterprise environment.
+
+Current boundaries include:
+
+* AWS-focused technical implementation
+* Three Terraform-managed SCP definitions
+* No automatic SCP attachment to accounts or organizational units
+* No claim of production deployment
+* No claim of regulatory certification
+* tfsec and Checkov operate as reporting controls
+* CloudTrail, AWS Config, GuardDuty, and Security Hub are referenced by protective governance controls but are not deployed by this Terraform configuration
+* Azure and Google Cloud remain reference architecture extensions
+
+These boundaries distinguish demonstrated implementation from production architecture recommendations.
+
+---
+
+## Architecture Lessons
+
+The project demonstrates several broader security architecture principles:
+
+1. Policy-as-Code is a governance capability, not simply an automation technique.
+2. Technical validity does not establish business suitability.
+3. Preventive controls require explicit consideration of blast radius.
+4. Not every security requirement belongs in an SCP.
+5. Detection and enforcement are separate architecture decisions.
+6. Scanner findings require risk context before becoming blocking gates.
+7. Exceptions should be designed as part of the governance architecture.
+8. Native cloud controls should be used according to their actual technical capabilities.
+9. Architecture review remains necessary even as governance becomes increasingly automated.
 
 ---
 
 ## Key Takeaway
 
-**Policy-as-Code is most effective when it converts repeatable enterprise security decisions into automated guardrails without attempting to automate the contextual risk decisions that require architecture and business judgment.**
+A mature Policy-as-Code architecture does not attempt to automate every security decision.
 
-This project demonstrates that balance through an AWS-based implementation using organizational policies, Infrastructure-as-Code, automated validation, monitoring, and a governance model for architecture review, exceptions, and risk-based enforcement.
+It converts **repeatable, technically enforceable requirements into consistent guardrails** while preserving architecture review, exception management, risk acceptance, and operational oversight for decisions that require context.
+
+The goal is not maximum automation.
+
+The goal is **scalable, traceable, risk-based governance**.
