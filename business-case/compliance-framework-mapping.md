@@ -1,239 +1,418 @@
-# Enterprise Compliance Framework Mapping
-*Multi-Cloud Policy Alignment with Major Regulatory Standards*
+# Compliance Framework Mapping — Enterprise Policy-as-Code Framework
 
-## 📋 Executive Overview
+## Purpose
 
-This mapping demonstrates how Policy-as-Code implementations align with major compliance frameworks, providing automated governance and audit-ready evidence collection across AWS, Azure, and GCP environments.
+This document maps the security architecture capabilities demonstrated by the Enterprise Policy-as-Code Framework to representative security and compliance requirements.
 
-**Compliance Coverage Summary:**
-- **Overall Framework Coverage:** 92%*
-- **Automated Controls:** 85%*  
-- **Manual Controls Eliminated:** 78%*
-- **Audit Preparation Time Reduction:** 80%*
+The purpose of the mapping is to demonstrate how automated cloud governance can support broader enterprise security and compliance programs.
 
----
+This mapping does **not** claim certification or full compliance with any framework.
 
-## 🏛️ NIST Cybersecurity Framework Implementation
-
-| Function | Category | Subcategory | AWS Implementation | Azure Implementation | GCP Implementation | Coverage* |
-|----------|----------|-------------|-------------------|---------------------|-------------------|-----------|
-| **IDENTIFY** | Asset Management | ID.AM-1 | EC2/S3 tagging policies | Resource tagging policies | Label enforcement policies | 95%* |
-| **IDENTIFY** | Business Environment | ID.BE-5 | Cost center tagging | Management groups | Organization policies | 88%* |
-| **IDENTIFY** | Risk Assessment | ID.RA-1 | Config Rules assessment | Policy compliance scanning | Security Command Center | 90%* |
-| **PROTECT** | Access Control | PR.AC-1 | IAM policy enforcement | RBAC policy definitions | IAM conditions & constraints | 92%* |
-| **PROTECT** | Data Security | PR.DS-1 | S3 encryption mandates | Storage encryption policies | Encryption at rest enforcement | 98%* |
-| **PROTECT** | Data Security | PR.DS-2 | Transit encryption policies | TLS enforcement policies | Secure transport requirements | 95%* |
-| **DETECT** | Continuous Monitoring | DE.CM-1 | CloudTrail + Config | Activity Log + Policy | Cloud Logging + Monitoring | 85%* |
-| **RESPOND** | Response Planning | RS.RP-1 | Lambda auto-remediation | Logic Apps workflows | Cloud Functions responses | 75%* |
-| **RECOVER** | Recovery Planning | RC.RP-1 | Backup policy enforcement | Disaster recovery policies | Data retention policies | 80%* |
-
-### NIST Implementation Results
-- **Total Controls Mapped:** 47* out of 108* NIST subcategories
-- **Automation Level:** 85%* of mapped controls automated
-- **Audit Readiness:** 95%* reduction in evidence collection time*
-- **Compliance Score Improvement:** 38%* increase in NIST maturity rating*
+Policy-as-Code addresses selected technical and governance controls. Complete compliance requires additional organizational, procedural, physical, contractual, operational, and human controls.
 
 ---
 
-## 📊 SOX (Sarbanes-Oxley) Compliance Implementation
+# Architecture Capabilities
 
-| SOX Section | Requirement | Policy Implementation | Automated Evidence* | Manual Effort Reduction* |
-|-------------|-------------|----------------------|-------------------|-------------------------|
-| **Section 302** | CEO/CFO Certifications | Executive approval workflows | 100%* automated logging | 90%* reduction |
-| **Section 404** | Internal Controls | Change management policies | Real-time compliance monitoring | 85%* reduction |
-| **Section 409** | Real-time Disclosure | Financial data access controls | Automated access reviews | 95%* reduction |
-| **Section 802** | Record Retention | Data lifecycle policies | Automated retention enforcement | 80%* reduction |
+The project demonstrates several governance capabilities relevant across multiple security frameworks:
 
-### SOX Business Impact
-- **Audit Cost Reduction:** $300,000* annually through automation
-- **Compliance Preparation:** 75%* faster audit preparation
-- **Control Effectiveness:** 92%* of controls automated
-- **Risk Mitigation:** $1.2M* penalty avoidance through proactive compliance
-
----
-
-## 🏥 HIPAA Security Rule Compliance
-
-| HIPAA Standard | Implementation Specification | AWS Policy | Azure Policy | GCP Policy | Compliance Level* |
-|----------------|------------------------------|------------|--------------|------------|------------------|
-| **§ 164.308(a)(1)** | Security Officer | IAM administrative roles | Security admin roles | Security admin bindings | 100%* |
-| **§ 164.308(a)(3)** | Workforce Training | Automated access provisioning | JIT access policies | Temporary access grants | 95%* |
-| **§ 164.308(a)(4)** | Information Access | RBAC enforcement | Conditional access | IAM conditions | 98%* |
-| **§ 164.310(d)(1)** | Device Controls | EBS encryption policies | Disk encryption policies | Persistent disk encryption | 100%* |
-| **§ 164.312(a)(1)** | Access Control | MFA enforcement | Azure AD policies | 2FA requirements | 95%* |
-| **§ 164.312(c)(1)** | Integrity | CloudTrail integrity | Log Analytics integrity | Cloud Audit Logs | 90%* |
-| **§ 164.312(e)(1)** | Transmission Security | TLS 1.3 enforcement | HTTPS only policies | SSL/TLS requirements | 98%* |
-
-### HIPAA Healthcare Implementation Example*
-**Business Context:** Regional hospital network with 2.5M* patient records
-- **Implementation Cost:** $150,000* over 6 months*
-- **Compliance Achievement:** 98%* HIPAA compliance score
-- **Audit Results:** Zero* findings in external HIPAA audit
-- **Cost Savings:** $400,000* annually in compliance overhead reduction
+* Preventive cloud guardrails
+* Infrastructure-as-Code
+* Policy lifecycle management
+* Change control and versioning
+* Automated validation
+* Audit logging
+* Configuration monitoring
+* Security architecture review
+* Exception management
+* Risk-based control selection
+* Access-control governance
+* Data-protection guardrails
+* Security configuration standards
+* Traceability between requirements and technical controls
 
 ---
 
-## 💳 PCI-DSS Compliance Framework
+# NIST Cybersecurity Framework
 
-| PCI-DSS Requirement | Control Description | Policy Implementation | Automation Level* | Risk Reduction* |
-|---------------------|--------------------|-----------------------|-------------------|-----------------|
-| **Requirement 1** | Firewall Configuration | Network security policies | 95%* automated | 90%* risk reduction |
-| **Requirement 2** | Default Passwords | Password policy enforcement | 100%* automated | 95%* risk reduction |
-| **Requirement 3** | Cardholder Data Protection | Encryption policies | 98%* automated | 92%* risk reduction |
-| **Requirement 4** | Transmission Encryption | TLS enforcement policies | 100%* automated | 98%* risk reduction |
-| **Requirement 6** | Secure Development | Code scanning policies | 85%* automated | 80%* risk reduction |
-| **Requirement 8** | Access Control | Identity management policies | 92%* automated | 88%* risk reduction |
-| **Requirement 10** | Logging and Monitoring | Audit logging policies | 98%* automated | 95%* risk reduction |
-| **Requirement 11** | Security Testing | Vulnerability scanning policies | 90%* automated | 85%* risk reduction |
+The Policy-as-Code architecture supports several outcomes represented within the NIST Cybersecurity Framework.
 
-### PCI-DSS E-commerce Implementation Example*
-**Business Context:** Global payment processor handling 50M* transactions monthly*
-- **Compliance Achievement Time:** 4 months* vs. 18 months* traditional approach
-- **Audit Preparation:** 2 weeks* vs. 12 weeks* manual approach
-- **Cost Savings:** $800,000* annually in compliance management
-- **Risk Mitigation:** $2.5M* penalty avoidance through proactive compliance
+## Govern
 
----
+Policy-as-Code supports governance by establishing:
 
-## 🔒 ISO 27001 Information Security Management
+* documented security requirements,
+* defined policy ownership,
+* architecture review,
+* risk-based control selection,
+* exception management,
+* and traceable governance decisions.
 
-| ISO 27001 Control | Control Category | Policy Implementation | Automation Level* | Business Value* |
-|-------------------|------------------|-----------------------|-------------------|-----------------|
-| **A.9.1.2** | Access Management | User lifecycle policies | 95%* automated | $200,000* efficiency |
-| **A.10.1.1** | Cryptographic Policy | Encryption enforcement | 98%* automated | $150,000* risk mitigation |
-| **A.12.1.2** | Change Management | Infrastructure change control | 90%* automated | $300,000* operational savings |
-| **A.12.4.1** | Event Logging | Comprehensive audit logging | 100%* automated | $180,000* compliance savings |
-| **A.14.2.2** | System Security | Security configuration baselines | 88%* automated | $220,000* security improvement |
-| **A.16.1.2** | Incident Reporting | Automated incident workflows | 85%* automated | $250,000* response efficiency |
+### Project Alignment
 
-### ISO 27001 Manufacturing Implementation Example*
-**Business Context:** Global manufacturing company with 15,000* employees across 45* countries
-- **Certification Timeline:** 8 months* vs. 24 months* traditional approach
-- **Implementation Cost:** $400,000* vs. $1.2M* manual implementation
-- **Annual Savings:** $600,000* in operational efficiency
-- **Compliance Score:** 94%* ISO 27001 maturity rating
+Enterprise security requirements can be translated into version-controlled technical policies after appropriate architecture and risk review.
 
 ---
 
-## 📈 Compliance ROI Analysis
+## Identify
 
-### 3-Year Compliance Value Projection*
+Cloud governance requires understanding:
 
-| Framework | Implementation Cost* | Annual Savings* | 3-Year ROI* | Risk Mitigation Value* |
-|-----------|--------------------|-----------------|-----------|-----------------------|
-| **NIST CSF** | $200,000* | $400,000* | 500%* | $800,000* |
-| **SOX** | $150,000* | $350,000* | 600%* | $1,200,000* |
-| **HIPAA** | $180,000* | $300,000* | 400%* | $2,000,000* |
-| **PCI-DSS** | $220,000* | $450,000* | 512%* | $1,500,000* |
-| **ISO 27001** | $300,000* | $500,000* | 400%* | $900,000* |
-| **TOTAL** | **$1,050,000*** | **$2,000,000*** | **476%*** | **$6,400,000*** |
+* organizational boundaries,
+* cloud accounts,
+* governed resources,
+* applicable security requirements,
+* and risk associated with configuration decisions.
 
-### Quantified Business Benefits*
+### Project Alignment
 
-**Operational Efficiency:**
-- Audit preparation time: 80%* reduction across all frameworks
-- Compliance reporting: 90%* automation achieved
-- Policy deployment: 95%* faster than manual processes
-- Exception handling: 85%* reduction in processing time
-
-**Risk Management:**
-- Regulatory penalties avoided: $3.2M* annually across all frameworks
-- Insurance premium reductions: 25%* average across policies
-- Security incident prevention: $2.8M* risk mitigation value
-- Business continuity improvement: 40%* faster recovery times
-
-**Strategic Value:**
-- Time-to-market improvement: 30%* faster for compliant services
-- Customer trust enhancement: 25%* improvement in security ratings
-- Market differentiation: Industry-leading compliance posture
-- Innovation capacity: 35%* more resources available for innovation
+AWS Organizations provides an organizational governance boundary, while policy requirements establish expected security conditions.
 
 ---
 
-## 🎯 Industry-Specific Implementation Examples
+## Protect
 
-### Financial Services Implementation*
-**Organization:** Regional bank with $5B* in assets
-**Frameworks:** SOX, PCI-DSS, FFIEC Guidelines
-**Results:**
-- Compliance cost reduction: 60%* ($1.2M* annually)
-- Audit duration: 4 weeks* vs. 16 weeks* previously
-- Regulatory findings: Zero* critical findings in last 2* examinations
-- Customer trust score: 95%* (industry average: 78%*)
+Preventive policies can establish technical boundaries intended to prevent prohibited cloud actions or configurations.
 
-### Healthcare Provider Network*
-**Organization:** 15* hospitals serving 2M* patients
-**Frameworks:** HIPAA, HITECH, State Privacy Laws
-**Results:**
-- PHI breach prevention: 100%* (zero* incidents in 18 months*)
-- Audit preparation: 3 days* vs. 8 weeks* previously
-- Compliance officer productivity: 70%* improvement
-- Patient trust rating: 92%* (industry average: 81%*)
+### Project Alignment
 
-### Global Manufacturing*
-**Organization:** 50* facilities across 20* countries
-**Frameworks:** ISO 27001, SOX, Local Privacy Regulations
-**Results:**
-- Multi-country compliance: 98%* consistency across regions
-- Incident response time: 2 hours* vs. 24 hours* previously
-- Operational efficiency: 45%* improvement in compliance processes
-- Global audit coordination: 85%* time reduction
+AWS Service Control Policies provide preventive organizational guardrails.
+
+Terraform provides repeatable deployment of governance configuration.
 
 ---
 
-## 🔄 Continuous Compliance Framework
+## Detect
 
-### Automated Compliance Monitoring
+Preventive controls cannot identify every security condition.
 
-**Real-time Dashboards:**
-- Compliance score tracking across all frameworks
-- Policy violation detection and alerting
-- Audit evidence collection and organization
-- Executive summary reporting
+Organizations also require mechanisms for detecting changes and configuration drift.
 
-**Predictive Analytics:**
-- Trend analysis for compliance drift
-- Proactive remediation recommendations  
-- Resource optimization suggestions
-- Risk exposure forecasting
+### Project Alignment
 
-### Compliance as a Service Model
-
-**Service Offerings:**
-- Framework assessment and gap analysis
-- Policy template library and customization
-- Automated deployment and monitoring
-- Audit preparation and evidence collection
-
-**Business Value:**
-- 70%* faster compliance for new business units
-- 85%* reduction in compliance consulting costs
-- 95%* consistency across organizational divisions
-- 60%* improvement in audit outcomes
+AWS Config and AWS CloudTrail support configuration visibility, activity records, and detective governance patterns.
 
 ---
 
-## 🚨 **COMPREHENSIVE FICTIONAL DATA DISCLAIMER**
+## Respond and Recover
 
-**ALL compliance percentages, coverage metrics, implementation timelines, cost figures, ROI calculations, business outcomes, organizational sizes, employee counts, transaction volumes, asset values, audit results, risk mitigation values, efficiency gains, and quantitative measurements marked with asterisks (*) throughout this entire compliance mapping document are completely fictional and created solely for project demonstration purposes.**
+Policy-as-Code does not independently provide incident response or recovery capabilities.
 
-This compliance framework mapping serves to demonstrate:
-- **Regulatory knowledge** across multiple compliance frameworks
-- **Policy mapping capabilities** for complex enterprise requirements
-- **Business value articulation** for compliance investments
-- **Risk assessment methodologies** for regulatory environments
-- **Strategic planning skills** for enterprise compliance programs
+However, audit information and configuration history generated by the surrounding governance environment can support investigation and remediation processes.
 
-**Actual compliance implementation results will vary dramatically** based on:
-- Organizational size, industry, current compliance maturity, and regulatory environment
-- Existing infrastructure, security posture, and governance processes
-- Implementation approach, timeline, resource availability, and budget constraints
-- Regulatory interpretation, auditor requirements, and jurisdictional variations
-- Technology stack, vendor capabilities, and integration complexity
-- Team expertise, change management effectiveness, and organizational culture
-- Market conditions, business priorities, and competitive landscape
-- Specific regulatory updates, enforcement patterns, and industry standards
+### Architecture Boundary
 
-**This compliance mapping demonstrates the regulatory expertise, strategic analysis capabilities, and business communication skills expected of senior enterprise architecture professionals in highly regulated industries.**
+Incident response and disaster recovery remain separate enterprise capabilities and should not be considered implemented solely through this project.
 
-*No actual compliance guarantees, audit outcomes, or regulatory commitments should be inferred from this demonstration document.*
+---
+
+# NIST SP 800-53
+
+The project has conceptual alignment with several NIST SP 800-53 control families.
+
+## AC — Access Control
+
+Relevant architecture capabilities include:
+
+* organizational permission boundaries,
+* centralized governance,
+* least-privilege principles,
+* and controlled exceptions.
+
+AWS SCPs establish boundaries on permissions available within governed accounts.
+
+SCPs do not replace IAM policies or application authorization.
+
+---
+
+## AU — Audit and Accountability
+
+Relevant capabilities include:
+
+* logging governance activity,
+* maintaining change history,
+* recording infrastructure changes,
+* and supporting investigation.
+
+AWS CloudTrail provides API activity records.
+
+Version control provides history for policy and Infrastructure-as-Code changes.
+
+---
+
+## CA — Assessment, Authorization, and Monitoring
+
+Policy validation and cloud configuration monitoring can contribute to continuous control assessment.
+
+AWS Config can support evaluation of resource configuration against defined requirements.
+
+Automated controls supplement rather than replace formal security assessment and authorization processes.
+
+---
+
+## CM — Configuration Management
+
+This is one of the strongest alignments in the project.
+
+Relevant capabilities include:
+
+* Infrastructure-as-Code,
+* version-controlled configurations,
+* defined security baselines,
+* automated validation,
+* configuration monitoring,
+* and controlled changes.
+
+Terraform and GitHub provide the primary mechanisms supporting these capabilities.
+
+---
+
+## PL — Planning
+
+Architecture decisions, governance requirements, and control design contribute to security planning.
+
+Policy-as-Code provides a mechanism for translating selected security requirements into enforceable technical standards.
+
+---
+
+## PM — Program Management
+
+Centralized policy governance supports enterprise security program objectives such as:
+
+* consistent control implementation,
+* ownership,
+* governance,
+* metrics,
+* and policy lifecycle management.
+
+---
+
+## RA — Risk Assessment
+
+The framework uses risk as an input when deciding whether a control should be:
+
+* preventive,
+* detective,
+* manually reviewed,
+* or subject to an exception.
+
+Policy enforcement decisions should consider both security risk and operational impact.
+
+---
+
+## SC — System and Communications Protection
+
+Cloud guardrails may contribute to enforcing requirements associated with:
+
+* encryption,
+* network boundaries,
+* approved services,
+* and protection of sensitive resources.
+
+Actual coverage depends on the specific policies implemented.
+
+---
+
+# PCI DSS
+
+Policy-as-Code can support selected PCI DSS technical requirements in environments handling payment-card data.
+
+Potential areas of support include:
+
+## Secure Configuration
+
+Infrastructure-as-Code and policy controls can help establish repeatable security configuration standards.
+
+## Access Control
+
+Organizational guardrails can reinforce restrictions around cloud permissions and administrative capabilities.
+
+## Logging
+
+CloudTrail and related monitoring services can contribute to audit logging requirements.
+
+## Configuration Monitoring
+
+Automated evaluation can help identify cloud resources that move outside approved security configurations.
+
+## Change Control
+
+Version-controlled Terraform and policy files provide traceability for changes to governance infrastructure.
+
+### Important Limitation
+
+This project does not represent a PCI DSS-compliant cardholder data environment.
+
+Policy-as-Code would represent only one component of a broader PCI DSS control environment.
+
+---
+
+# ISO/IEC 27001
+
+Policy-as-Code can support an Information Security Management System by providing technical mechanisms for implementing selected organizational security requirements.
+
+Relevant areas include:
+
+* access control,
+* configuration management,
+* change management,
+* logging,
+* monitoring,
+* cloud-service governance,
+* documented security requirements,
+* and technical compliance verification.
+
+### Architecture Value
+
+Policy-as-Code helps connect documented security expectations with repeatable technical enforcement.
+
+It does not replace the management system, risk-assessment process, internal audits, leadership responsibilities, or other organizational requirements associated with ISO/IEC 27001.
+
+---
+
+# HIPAA Security Rule
+
+In environments handling electronic protected health information, Policy-as-Code can support selected technical safeguards and governance requirements.
+
+Potential applications include:
+
+* access restrictions,
+* encryption requirements,
+* logging,
+* configuration standards,
+* and protection of cloud resources containing sensitive information.
+
+### Important Limitation
+
+This project does not represent a HIPAA-compliant healthcare environment.
+
+HIPAA compliance requires administrative, physical, organizational, and technical safeguards beyond cloud policy enforcement.
+
+---
+
+# SOX-Related Technology Controls
+
+Policy-as-Code may support technology controls associated with financial reporting environments by improving:
+
+* change traceability,
+* access governance,
+* configuration consistency,
+* logging,
+* and enforcement of approved infrastructure standards.
+
+Version-controlled infrastructure and policy changes can provide evidence supporting change-management processes.
+
+### Important Limitation
+
+SOX compliance depends on the organization's financial reporting environment, control design, testing, governance, and audit processes.
+
+Policy-as-Code alone does not establish SOX compliance.
+
+---
+
+# Control Mapping Summary
+
+| Architecture Capability     | NIST CSF         | NIST 800-53 | PCI DSS    | ISO 27001  | HIPAA      | SOX-Related IT Controls |
+| --------------------------- | ---------------- | ----------- | ---------- | ---------- | ---------- | ----------------------- |
+| Preventive cloud guardrails | Protect          | AC / SC     | Applicable | Applicable | Applicable | Applicable              |
+| Infrastructure-as-Code      | Protect          | CM          | Applicable | Applicable | Applicable | Applicable              |
+| Version-controlled changes  | Govern / Protect | CM          | Applicable | Applicable | Supporting | Applicable              |
+| Audit logging               | Detect           | AU          | Applicable | Applicable | Applicable | Applicable              |
+| Configuration monitoring    | Detect           | CA / CM     | Applicable | Applicable | Applicable | Applicable              |
+| Architecture review         | Govern           | PL / RA     | Supporting | Applicable | Supporting | Supporting              |
+| Exception management        | Govern           | RA / PM     | Supporting | Applicable | Supporting | Applicable              |
+| Risk-based enforcement      | Govern           | RA          | Supporting | Applicable | Supporting | Supporting              |
+| Policy lifecycle management | Govern           | PM / CM     | Supporting | Applicable | Supporting | Applicable              |
+
+**Applicable** indicates that the capability may directly support requirements within the framework depending on implementation and organizational scope.
+
+**Supporting** indicates that the capability contributes to the broader governance process but does not independently satisfy the associated requirement.
+
+---
+
+# Governance Traceability Model
+
+A mature Policy-as-Code program should maintain traceability across:
+
+**Framework / Regulatory Requirement**
+
+↓
+
+**Enterprise Security Standard**
+
+↓
+
+**Architecture Requirement**
+
+↓
+
+**Technical Policy**
+
+↓
+
+**Infrastructure Implementation**
+
+↓
+
+**Validation and Enforcement**
+
+↓
+
+**Monitoring Evidence**
+
+↓
+
+**Exception / Risk Decision**
+
+This prevents compliance automation from becoming disconnected from the requirement it was intended to support.
+
+---
+
+# Architecture Consideration: Compliance vs. Security
+
+A system can pass an automated policy check and still contain significant security risk.
+
+Likewise, a technically secure architecture may still fail a compliance requirement because required documentation, governance, approvals, or evidence are missing.
+
+For this reason, Policy-as-Code should support both security and compliance programs without treating them as interchangeable.
+
+Automated policy evaluation answers a narrow question:
+
+**Does this configuration satisfy the technical condition represented by this policy?**
+
+It does not answer:
+
+**Is the entire system secure and compliant?**
+
+That determination requires broader architecture, risk, governance, and compliance assessment.
+
+---
+
+# Evidence and Auditability
+
+Policy-as-Code can improve the quality of technical evidence available to security and compliance teams.
+
+Potential evidence sources include:
+
+* Git commit history
+* Pull-request approvals
+* Terraform plans
+* Policy validation results
+* Deployment history
+* AWS CloudTrail events
+* AWS Config history
+* Policy exception records
+* Architecture decisions
+* Remediation records
+
+The specific evidence required depends on the applicable framework and organizational control environment.
+
+---
+
+# Key Takeaway
+
+**Policy-as-Code can strengthen compliance programs by making selected technical requirements consistent, repeatable, traceable, and measurable.**
+
+It should not be presented as automated compliance.
+
+The stronger architecture model connects regulatory and security requirements to enterprise standards, technical controls, monitoring evidence, exception management, and human governance.
